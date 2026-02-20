@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>오디오 토글</title>
+
+<style>
+body {
+    margin: 0;
+    background: #111;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+    color: white;
+    font-family: sans-serif;
+}
+
+img {
+    width: 80vw;
+    max-width: 300px;
+    height: auto;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+#status {
+    margin-top: 20px;
+    font-size: 24px;
+}
+</style>
+</head>
+
+<body>
+
+<img id="toggleImage" src="./image.png" alt="버튼">
+<div id="status">눌러봐</div>
+
+<audio id="audio" preload="auto">
+    <source src="./sound.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+const img = document.getElementById("toggleImage");
+const audio = document.getElementById("audio");
+const status = document.getElementById("status");
+
+let isPlaying = false;
+
+img.addEventListener("click", function() {
+
+    if (!isPlaying) {
+
+        audio.play().then(() => {
+            status.textContent = "오옹!";
+            isPlaying = true;
+        }).catch(err => {
+            status.textContent = "재생 실패 😢";
+            console.log(err);
+        });
+
+    } else {
+
+        audio.pause();
+        audio.currentTime = 0;
+        status.textContent = "힝";
+        isPlaying = false;
+
+    }
+
+});
+</script>
+
+</body>
+</html>
