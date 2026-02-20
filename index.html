@@ -3,74 +3,148 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>오디오 토글</title>
+<title>팀 클릭 대전</title>
 
 <style>
-body {
-    margin: 0;
-    background: #111;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    flex-direction: column;
-    color: white;
-    font-family: sans-serif;
+body{
+    margin:0;
+    background:#111;
+    color:white;
+    font-family:sans-serif;
+    text-align:center;
 }
 
-img {
-    width: 80vw;
-    max-width: 300px;
-    height: auto;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
+button{
+    padding:15px 25px;
+    margin:10px;
+    font-size:18px;
+    border:none;
+    border-radius:12px;
 }
 
-#status {
-    margin-top: 20px;
-    font-size: 24px;
+#game{
+    display:none;
+}
+
+img{
+    width:70vw;
+    max-width:300px;
+    transition: transform 0.1s;
+}
+
+#score{
+    font-size:40px;
+    margin:20px;
+}
+
+#tabs{
+    margin-top:20px;
+}
+
+.tab{
+    display:none;
+}
+
+.active{
+    display:block;
+}
+
+.shake{
+    animation: shake 0.15s;
+}
+
+@keyframes shake{
+    0%{transform:translateX(0);}
+    25%{transform:translateX(-5px);}
+    50%{transform:translateX(5px);}
+    75%{transform:translateX(-5px);}
+    100%{transform:translateX(0);}
 }
 </style>
 </head>
 
 <body>
 
-<img id="toggleImage" src="./image.png" alt="버튼">
-<div id="status">눌러봐</div>
+<h1>팀 선택</h1>
+<button onclick="selectTeam('냉장고')">🧊 냉장고</button>
+<button onclick="selectTeam('국밥고')">🍲 국밥고</button>
 
-<audio id="audio" preload="auto">
-    <source src="./sound.mp3" type="audio/mpeg">
+<div id="game">
+    <h2 id="teamName"></h2>
+    <div id="score">0</div>
+    <img src="image.png" id="cat">
+
+    <div id="tabs">
+        <button onclick="showTab('ranking')">🏆 순위</button>
+    </div>
+
+    <div id="ranking" class="tab">
+        <h3>내 기록</h3>
+        <div id="rankList"></div>
+    </div>
+</div>
+
+<audio id="clickSound">
+    <source src="sound.mp3" type="audio/mpeg">
 </audio>
 
 <script>
-const img = document.getElementById("toggleImage");
-const audio = document.getElementById("audio");
-const status = document.getElementById("status");
+let score=0;
+let team="";
+const scoreDisplay=document.getElementById("score");
+const cat=document.getElementById("cat");
+const clickSound=document.getElementById("clickSound");
 
-let isPlaying = false;
+function selectTeam(t){
+    team=t;
+    document.querySelector("h1").style.display="none";
+    document.querySelectorAll("button")[0].style.display="none";
+    document.querySelectorAll("button")[1].style.display="none";
+    document.getElementById("game").style.display="block";
+    document.getElementById("teamName").innerText=team+" 팀";
+}
 
-img.addEventListener("click", function() {
+cat.addEventListener("click",()=>{
+    score++;
+    scoreDisplay.innerText=score;
 
-    if (!isPlaying) {
-
-        audio.play().then(() => {
-            status.textContent = "오옹!";
-            isPlaying = true;
-        }).catch(err => {
-            status.textContent = "재생 실패 😢";
-            console.log(err);
-        });
-
-    } else {
-
-        audio.pause();
-        audio.currentTime = 0;
-        status.textContent = "힝";
-        isPlaying = false;
-
+    // 진동
+    if(navigator.vibrate){
+        navigator.vibrate(30);
     }
 
+    // 액션감
+    cat.style.transform="scale(1.1)";
+    document.body.classList.add("shake");
+
+    setTimeout(()=>{
+        cat.style.transform="scale(1)";
+        document.body.classList.remove("shake");
+    },100);
+
+    clickSound.currentTime=0;
+    clickSound.play();
 });
+
+function showTab(tab){
+    document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+    document.getElementById(tab).classList.add("active");
+    updateRanking();
+}
+
+function updateRanking(){
+    let data=JSON.parse(localStorage.getItem("ranking")||"{}");
+    if(!data[team]||score>data[team]){
+        data[team]=score;
+        localStorage.setItem("ranking",JSON.stringify(data));
+    }
+
+    let html="";
+    for(let t in data){
+        html+=t+" : "+data[t]+"<br>";
+    }
+    document.getElementById("rankList").innerHTML=html;
+}
 </script>
 
 </body>
